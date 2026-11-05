@@ -19,24 +19,25 @@ There you will find:
 
 | Export       | What it controls                                              |
 | ------------ | ------------------------------------------------------------- |
-| `site`       | Name, role, tagline, email, location, social links, résumé PDF |
-| `experience` | Jobs — role, org, dates, bullets, tool tags                    |
-| `education`  | Degrees, schools, years, coursework                            |
-| `skills`     | Skill groups and the tags inside them                          |
-| `projects`   | Project cards — title, blurb, tags, links                      |
-| `nav`        | Reserved for nav ordering (the header uses a short list)       |
+| `site`           | Name, role, tagline, email, location, social links, résumé PDF |
+| `experience`     | Jobs — role, org, dates, bullets, tool tags                      |
+| `education`      | Degrees, schools, years, coursework                              |
+| `skills`         | Skill groups and the tags inside them                            |
+| `certifications` | Certifications (name, issuer)                                    |
+| `awards`         | Awards (title, org, note)                                        |
+| `projects`       | Optional project cards — empty by default, section hides         |
 
 ### Things to replace before applying
 
-- [ ] `site.email` (used in the hero button and at the end of every post)
-- [ ] LinkedIn / GitHub URLs and your résumé PDF: drop `resume.pdf` into `public/`
-      (the link only appears if the file exists)
+- [x] `site.email`, LinkedIn, GitHub and résumé PDF (`public/manan-shah-resume.pdf`)
+      are already filled in from the résumé
 - [ ] Optional photo: save a square image as `public/photo.jpg` and add
       `photo: 'photo.jpg'` inside `site` in `src/data/site.ts`
-- [ ] Replace the placeholder jobs, education, projects and skills
-- [ ] Replace or delete the three example blog posts in `src/content/blog/`
-- [ ] Set your real URL (`PUBLIC_SITE_URL` below) so canonical links and the
-      sitemap are correct
+- [ ] Review the experience bullets — pull the metrics you want to lead with
+- [ ] Add projects if you want the optional section, or leave `projects` empty
+- [ ] Replace the starter blog post in `src/content/blog/`
+- [ ] Set your real URL (`PUBLIC_SITE_URL` below) so canonical links, the
+      sitemap and the RSS feed are correct
 
 ## Writing a post
 
@@ -105,9 +106,9 @@ src/
   content/blog/*.md       ← posts (Markdown)
   content.config.ts       ← frontmatter schema
   layouts/Base.astro      ← <head>, SEO/OpenGraph/JSON-LD, theme, nav, footer
-  components/             ← Hero, Section, cards, lists, TOC…
+  components/             ← Hero, Section, cards, lists, TOC, Credentials…
   pages/
-    index.astro           ← the one-page portfolio
+    index.astro           ← the one-page portfolio (résumé)
     blog/index.astro      ← post index with topic filter
     blog/[slug].astro     ← post page (TOC, reading time, prev/next)
     rss.xml.ts

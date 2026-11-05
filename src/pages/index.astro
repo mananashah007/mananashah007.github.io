@@ -6,6 +6,7 @@ import Section from '@/components/Section.astro';
 import ExperienceList from '@/components/ExperienceList.astro';
 import EducationList from '@/components/EducationList.astro';
 import SkillsGrid from '@/components/SkillsGrid.astro';
+import Credentials from '@/components/Credentials.astro';
 import ProjectGrid from '@/components/ProjectGrid.astro';
 import PostCard from '@/components/PostCard.astro';
 import Icon from '@/components/Icon.astro';
@@ -16,6 +17,11 @@ const posts = (await getCollection('blog'))
   .filter((post) => !post.data.draft)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
+
+const showProjects = projects.length > 0;
+// Sections are numbered in display order; projects (04) are optional.
+const credentialsIndex = showProjects ? 5 : 4;
+const writingIndex = String(credentialsIndex + 1).padStart(2, '0');
 ---
 
 <Base>
@@ -30,11 +36,12 @@ const posts = (await getCollection('blog'))
       <EducationList />
     </Section>
 
-    <Section index="03" title="Skills" lede="Tools and methods I use day to day" id="skills">
+    <Section index="03" title="Skills" lede="Methods and tools I use day to day" id="skills">
       <SkillsGrid />
     </Section>
+
     {
-      projects.length > 0 && (
+      showProjects && (
         <Section
           index="04"
           title="Selected projects"
@@ -46,18 +53,27 @@ const posts = (await getCollection('blog'))
       )
     }
 
+    <Section
+      index={String(credentialsIndex).padStart(2, '0')}
+      title="Certifications & awards"
+      lede="A few markers along the way"
+      id="credentials"
+    >
+      <Credentials />
+    </Section>
+
     <section class="writing" data-reveal>
       <div class="writing-head">
         <h2 class="writing-title">
-          <span class="section-index">05</span>
+          <span class="section-index">{writingIndex}</span>
           Writing
         </h2>
-        <p class="writing-lede">
-          Notes on statistics, data science, business and economics.
-        </p>
         <a class="writing-all" href={url('blog/')}>
           All posts <Icon name="arrow" size={14} />
         </a>
+        <p class="writing-lede">
+          Notes on statistics, data science, business and economics.
+        </p>
       </div>
 
       {
@@ -130,14 +146,6 @@ const posts = (await getCollection('blog'))
     transform: translateY(-0.15em);
   }
 
-  .writing-lede {
-    order: 3;
-    flex-basis: 100%;
-    font-size: 0.9rem;
-    color: var(--muted);
-    margin-top: 0;
-  }
-
   .writing-all {
     margin-left: auto;
     display: inline-flex;
@@ -152,6 +160,14 @@ const posts = (await getCollection('blog'))
   .writing-all:hover {
     text-decoration: underline;
     text-underline-offset: 0.2em;
+  }
+
+  .writing-lede {
+    order: 3;
+    flex-basis: 100%;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0;
   }
 
   .writing-grid {
