@@ -1,0 +1,72 @@
+---
+interface Props {
+  index: string;
+  title: string;
+  /** Optional one-line description shown to the right of the heading on wide screens. */
+  lede?: string;
+  id?: string;
+}
+
+const { index, title, lede, id } = Astro.props;
+---
+
+<section class="section" id={id} data-reveal>
+  <div class="section-head">
+    <h2 class="section-title">
+      <span class="section-index">{index}</span>
+      {title}
+    </h2>
+    {lede && <p class="section-lede">{lede}</p>}
+  </div>
+  <div class="section-body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section {
+    padding-block: clamp(3rem, 7vw, 5rem) 0;
+  }
+
+  .section-head {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.4rem 2.5rem;
+    align-items: baseline;
+    padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--rule-strong);
+    margin-bottom: 2.25rem;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    font-size: var(--step-2);
+  }
+
+  .section-index {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--faint);
+    transform: translateY(-0.15em);
+  }
+
+  .section-lede {
+    color: var(--muted);
+    font-size: 0.9rem;
+    max-width: 34rem;
+  }
+
+  @media (min-width: 780px) {
+    .section-head {
+      grid-template-columns: auto 1fr;
+    }
+    .section-lede {
+      justify-self: end;
+      text-align: right;
+    }
+  }
+</style>

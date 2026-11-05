@@ -1,0 +1,140 @@
+---
+import { experience } from '@/data/site';
+
+const items = experience;
+---
+
+<ol class="xp">
+  {items.map((job) => (
+    <li class="xp-item">
+      <div class="xp-when">
+        <span class="xp-years">{job.start} — {job.end}</span>
+        {job.location && <span class="xp-where">{job.location}</span>}
+      </div>
+
+      <div class="xp-what">
+        <h3 class="xp-role">{job.role}</h3>
+        <p class="xp-org">{job.org}</p>
+        {job.summary && <p class="xp-summary">{job.summary}</p>}
+        <ul class="xp-bullets">
+          {job.bullets.map((b) => <li>{b}</li>)}
+        </ul>
+        {job.tags && job.tags.length > 0 && (
+          <ul class="xp-tags" aria-label={`Tools used at ${job.org}`}>
+            {job.tags.map((t) => <li>{t}</li>)}
+          </ul>
+        )}
+      </div>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .xp {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  .xp-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .xp-item:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .xp-when {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    padding-top: 0.35rem;
+  }
+
+  .xp-years {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.01em;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .xp-where {
+    color: var(--faint);
+  }
+
+  .xp-role {
+    font-size: var(--step-1);
+    font-weight: 500;
+  }
+
+  .xp-org {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--accent-ink);
+    margin-top: 0.1rem;
+  }
+
+  .xp-summary {
+    font-size: 0.92rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+
+  .xp-bullets {
+    margin: 0.75rem 0 0;
+    padding-left: 1.05rem;
+    font-size: 0.94rem;
+    color: var(--ink-soft);
+  }
+
+  .xp-bullets li {
+    margin-top: 0.4rem;
+    padding-left: 0.15rem;
+  }
+
+  .xp-bullets li::marker {
+    color: var(--faint);
+  }
+
+  .xp-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+  }
+
+  .xp-tags li {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.01em;
+    color: var(--muted);
+    background: var(--bg-subtle);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.12rem 0.4rem;
+  }
+
+  @media (min-width: 720px) {
+    .xp-item {
+      grid-template-columns: 10.5rem minmax(0, 1fr);
+      gap: 0 2.5rem;
+    }
+    .xp-when {
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+  }
+</style>

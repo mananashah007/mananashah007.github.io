@@ -1,0 +1,100 @@
+---
+import { site } from '@/data/site';
+import { url } from '@/lib/url';
+import Icon from '@/components/Icon.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-about">
+      <p class="footer-name">{site.name}</p>
+      <p class="footer-note">
+        Built with <a href="https://astro.build" rel="noopener">Astro</a> and hosted on
+        <a href="https://pages.github.com" rel="noopener">GitHub Pages</a>.
+      </p>
+    </div>
+
+    <div class="footer-links">
+      <a href={url('rss.xml')}><Icon name="rss" size={14} /> RSS</a>
+      <a href={url('blog/')}>Writing</a>
+      <a href={url('')}>Top</a>
+    </div>
+  </div>
+
+  <div class="wrap footer-bottom">
+    <p>© {year} {site.name}</p>
+    <p class="footer-quote">All opinions are my own.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 6rem;
+    border-top: 1px solid var(--rule);
+    background: var(--bg-subtle);
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding-block: 2.5rem 1.5rem;
+  }
+
+  .footer-name {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+  }
+
+  .footer-note a {
+    color: var(--muted);
+    text-decoration-color: var(--rule-strong);
+  }
+
+  .footer-note a:hover {
+    color: var(--ink);
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+
+  .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .footer-links a:hover {
+    color: var(--ink);
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-block: 1rem 2rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.78rem;
+    color: var(--faint);
+  }
+
+  @media print {
+    .site-footer {
+      display: none;
+    }
+  }
+</style>

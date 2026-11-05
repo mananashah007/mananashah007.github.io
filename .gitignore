@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+.astro/
+
+# environment
+.env
+.env.production
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# logs
+*.log

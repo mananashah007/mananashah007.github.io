@@ -1,0 +1,396 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection, render } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import PostToc from '@/components/PostToc.astro';
+import Icon from '@/components/Icon.astro';
+import { site } from '@/data/site';
+import { url } from '@/lib/url';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const { title, description, pubDate, updatedDate, tags, draft } = post.data;
+
+// Keep drafts on the dev server only.
+if (draft && import.meta.env.PROD) {
+  return Astro.redirect('../');
+}
+
+const words = post.body.split(/\s+/).filter(Boolean).length;
+const minutes = Math.max(1, Math.round(words / 220));
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+const updatedLabel = updatedDate
+  ? `Updated ${updatedDate.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    })}`
+  : null;
+
+// Previous / next post for gentle in-site reading flow.
+const all = (await getCollection('blog'))
+  .filter((item) => !item.data.draft)
+  .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+const index = all.findIndex((item) => item.id === post.id);
+const prev = index > 0 ? all[index - 1] : null;
+const next = index >= 0 && index < all.length - 1 ? all[index + 1] : null;
+
+const hasToc = headings.some((h) => h.depth === 2 || h.depth === 3);
+---
+
+<Base type="article" title={title} description={description} publishedTime={pubDate} image={post.data.image}>
+  <article class="post" data-post>
+    <div class="wrap">
+      <a class="back" href={url('blog/')}><Icon name="arrow" size={14} /> All writing</a>
+    </div>
+
+    <header class="post-header wrap">
+      <p class="post-kicker">
+        {tags.map((tag) => <span class="post-kicker-tag">{tag}</span>)}
+      </p>
+      <h1 class="post-title">{title}</h1>
+      <p class="post-desc">{description}</p>
+
+      <div class="post-meta">
+        <img
+          class="post-avatar"
+          src={url('favicon.svg')}
+          alt=""
+          width="28"
+          height="28"
+          aria-hidden="true"
+        />
+        <span>{site.name}</span>
+        <span class="dot" aria-hidden="true">·</span>
+        <time datetime={pubDate.toISOString()}>{fmt(pubDate)}</time>
+        <span class="dot" aria-hidden="true">·</span>
+        <span class="post-reading"><Icon name="clock" size={13} /> {minutes} min read</span>
+        {updatedLabel && (
+          <>
+            <span class="dot" aria-hidden="true">·</span>
+            <span class="post-updated">{updatedLabel}</span>
+          </>
+        )}
+      </div>
+    </header>
+
+    {post.data.image && (
+      <figure class="post-hero wrap--narrow">
+        <img src={url(post.data.image)} alt="" loading="eager" />
+      </figure>
+    )}
+
+    <div class="post-grid wrap">
+      <div class="prose post-body" data-post-body>
+        <Content />
+      </div>
+
+      {hasToc && (
+        <aside class="post-aside">
+          <PostToc body={post.body} />
+        </aside>
+      )}
+    </div>
+
+    <div class="wrap wrap--narrow post-foot">
+      <div class="post-end">
+        <p class="post-end-label">Thanks for reading</p>
+        <p>
+          Thoughts, corrections or a counterexample? Send them to
+          <a href={`mailto:${site.email}`}>{site.email}</a> — I read everything.
+        </p>
+      </div>
+
+      {(prev || next) && (
+        <nav class="post-nav" aria-label="More writing">
+          {prev ? (
+            <a class="post-nav-link post-nav-prev" href={url(`blog/${prev.id}/`)}>
+              <span class="post-nav-dir">← Previous</span>
+              <span class="post-nav-title">{prev.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )}
+          {next ? (
+            <a class="post-nav-link post-nav-next" href={url(`blog/${next.id}/`)}>
+              <span class="post-nav-dir">Next →</span>
+              <span class="post-nav-title">{next.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )}
+        </nav>
+      )}
+    </div>
+  </article>
+</Base>
+
+<script>
+  // Tiny progress bar for long reads.
+  const bar = document.createElement('div');
+  bar.className = 'read-progress';
+  document.body.appendChild(bar);
+
+  const update = () => {
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - window.innerHeight;
+    const pct = max > 0 ? Math.min(1, doc.scrollTop / max) : 0;
+    bar.style.transform = `scaleX(${pct})`;
+  };
+
+  update();
+  addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', update);
+</script>
+
+<style is:global>
+  .read-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    z-index: 60;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+</style>
+
+<style>
+  .post {
+    padding-top: 2.5rem;
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .back svg {
+    transform: rotate(180deg);
+  }
+
+  .back:hover {
+    color: var(--ink);
+  }
+
+  .post-header {
+    width: 100%;
+    max-width: calc(var(--measure) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-top: 2rem;
+  }
+
+  .post-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .post-kicker-tag {
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 0.18rem 0.55rem;
+  }
+
+  .post-title {
+    font-size: clamp(2rem, 5vw, 2.9rem);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+  }
+
+  .post-desc {
+    font-family: var(--font-serif);
+    font-size: var(--step-1);
+    line-height: 1.5;
+    color: var(--muted);
+    margin-top: 1rem;
+    max-width: 36rem;
+  }
+
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.6rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .post-avatar {
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+    margin-right: 0.15rem;
+  }
+
+  .dot {
+    color: var(--faint);
+  }
+
+  .post-reading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .post-hero {
+    margin-top: 2.5rem;
+  }
+
+  .post-hero img {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--rule);
+  }
+
+  .post-grid {
+    width: 100%;
+    max-width: calc(var(--measure) + 2 * var(--gutter));
+    margin-inline: auto;
+    margin-top: 2.75rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3rem;
+  }
+
+  .post-body {
+    max-width: var(--measure);
+  }
+
+  .post-aside {
+    display: none;
+  }
+
+  .post-foot {
+    margin-top: 4rem;
+  }
+
+  .post-end {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .post-end-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 0.4rem;
+  }
+
+  .post-end a {
+    color: var(--accent-ink);
+  }
+
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  .post-nav-link {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    text-decoration: none;
+    transition: border-color 0.18s var(--ease);
+  }
+
+  .post-nav-link:hover {
+    border-color: var(--rule-strong);
+  }
+
+  .post-nav-next {
+    text-align: right;
+  }
+
+  .post-nav-dir {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .post-nav-title {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+
+  @media (min-width: 1080px) {
+    .post-grid {
+      max-width: 62rem;
+      grid-template-columns: minmax(0, var(--measure)) 13rem;
+      justify-content: center;
+      column-gap: 4rem;
+    }
+    .post-aside {
+      display: block;
+    }
+    .post-aside :global(.toc) {
+      position: sticky;
+      top: 6rem;
+      max-height: calc(100vh - 8rem);
+      overflow-y: auto;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .post-nav {
+      grid-template-columns: 1fr;
+    }
+    .post-nav-next {
+      text-align: left;
+    }
+  }
+
+  @media print {
+    .read-progress,
+    .post-nav,
+    .post-aside {
+      display: none !important;
+    }
+    .post {
+      padding-top: 0;
+    }
+  }
+</style>

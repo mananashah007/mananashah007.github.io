@@ -1,0 +1,165 @@
+---
+import '@/styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { site } from '@/data/site';
+import { url, absolute } from '@/lib/url';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Pass `article` for blog posts to get the richer social metadata. */
+  type?: 'website' | 'article';
+  publishedTime?: Date;
+  image?: string;
+  /** Hides the site header/footer chrome (used by 404). */
+  bare?: boolean;
+}
+
+const {
+  title,
+  description = site.tagline,
+  type = 'website',
+  publishedTime,
+  image,
+  bare = false,
+} = Astro.props;
+
+const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.role}`;
+const canonical = absolute(Astro.url.pathname.replace(/\/$/, '') + '/');
+const ogImage = image ? absolute(image) : undefined;
+
+const jsonLd =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: title,
+        datePublished: publishedTime?.toISOString(),
+        author: { '@type': 'Person', name: site.name },
+        description,
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: site.name,
+        jobTitle: site.role,
+        description: site.tagline,
+        url: canonical,
+      };
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="sitemap" href={url('sitemap-index.xml')} />
+    <link rel="alternate" type="application/rss+xml" title={`${site.name} — Writing`} href={url('rss.xml')} />
+    <meta name="author" content={site.name} />
+    <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {type === 'article' && publishedTime && (
+      <meta property="article:published_time" content={publishedTime.toISOString()} />
+    )}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    <link rel="stylesheet" href={url('fonts.css')} />
+    <!-- KaTeX styles are copied into public/ so they resolve relative to any base path -->
+    <link rel="stylesheet" href={url('katex/katex.min.css')} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <script is:inline>
+      // Apply the saved theme before first paint (avoids a flash).
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('js');
+        root.classList.remove('no-js');
+        try {
+          var saved = localStorage.getItem('theme');
+          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          root.dataset.theme = saved || (systemDark ? 'dark' : 'light');
+        } catch (e) {
+          root.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {!bare && <Header />}
+    <main id="main">
+      <slot />
+    </main>
+    {!bare && <Footer />}
+
+    <script>
+      // ---------------------------- theme toggle ---------------------------
+      const root = document.documentElement;
+      const toggle = document.getElementById('theme-toggle');
+
+      function syncToggle() {
+        if (!toggle) return;
+        const dark = root.dataset.theme === 'dark';
+        toggle.setAttribute('aria-pressed', String(dark));
+        toggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+        toggle.title = dark ? 'Switch to light theme' : 'Switch to dark theme';
+      }
+
+      toggle?.addEventListener('click', () => {
+        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem('theme', next);
+        } catch (e) {}
+        syncToggle();
+      });
+
+      syncToggle();
+
+      // Follow the OS if the visitor has never picked a theme manually.
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        let saved = null;
+        try {
+          saved = localStorage.getItem('theme');
+        } catch (err) {}
+        if (!saved) {
+          root.dataset.theme = e.matches ? 'dark' : 'light';
+          syncToggle();
+        }
+      });
+
+      // -------------------------- reveal on scroll -------------------------
+      const revealEls = document.querySelectorAll('[data-reveal]');
+      if (revealEls.length && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.05 }
+        );
+        revealEls.forEach((el) => io.observe(el));
+      } else {
+        revealEls.forEach((el) => el.classList.add('is-visible'));
+      }
+    </script>
+  </body>
+</html>

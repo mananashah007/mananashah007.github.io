@@ -1,0 +1,291 @@
+---
+import { getCollection } from 'astro:content';
+import { url } from '@/lib/url';
+
+
+const posts = (await getCollection('blog'))
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))].sort();
+---
+
+<section class="blog-index" aria-labelledby="writing-title">
+  <div class="wrap blog-head">
+    <p class="eyebrow">Writing</p>
+    <h1 class="blog-title" id="writing-title">Notes on data, economics &amp; decisions</h1>
+    <p class="blog-intro">
+      Essays on statistics, causal inference, business models and the economics
+      behind everyday numbers. Mostly things I wanted to understand better myself.
+    </p>
+    <p class="blog-sub">
+      {posts.length}
+      {posts.length === 1 ? ' post' : ' posts'}
+      <span aria-hidden="true">·</span>
+      <a href={url('rss.xml')} rel="alternate">RSS</a>
+      <span aria-hidden="true">·</span>
+      <span class="muted">New pieces whenever something is worth writing down.</span>
+    </p>
+  </div>
+
+  <div class="wrap blog-body">
+    {
+      tags.length > 0 && (
+        <nav class="tag-filter" aria-label="Filter by topic" data-tag-filter>
+          <ul>
+            <li>
+              <button type="button" class="chip is-active" data-tag="all" aria-pressed="true">
+                All
+              </button>
+            </li>
+            {tags.map((tag) => (
+              <li>
+                <button type="button" class="chip" data-tag={tag} aria-pressed="false">
+                  {tag}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+
+    {
+      posts.length === 0 ? (
+        <p class="empty">No posts yet — the first one is being written.</p>
+      ) : (
+        <ol class="post-list" data-post-list>
+          {posts.map((post) => {
+            const fmt = (d: Date) =>
+              d.toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                timeZone: 'UTC',
+              });
+            return (
+              <li class="post-row" data-tags={post.data.tags.join('|')}>
+                <a class="post-row-link" href={url(`blog/${post.id}/`)}>
+                  <time class="post-row-date" datetime={post.data.pubDate.toISOString()}>
+                    {fmt(post.data.pubDate)}
+                  </time>
+                  <span class="post-row-main">
+                    <span class="post-row-tags">
+                      {post.data.tags.slice(0, 2).map((tag) => (
+                        <span class="tag">{tag}</span>
+                      ))}
+                    </span>
+                    <span class="post-row-title">{post.data.title}</span>
+                    <span class="post-row-desc">{post.data.description}</span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      )
+    }
+
+    <p class="blog-follow">
+      If you want to follow along, the <a href={url('rss.xml')}>RSS feed</a> is the
+      most reliable way.
+    </p>
+  </div>
+</section>
+
+<script>
+  const filter = document.querySelector<HTMLElement>('[data-tag-filter]');
+  const rows = document.querySelectorAll<HTMLElement>('[data-tags]');
+
+  filter?.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-tag]');
+    if (!button) return;
+
+    const tag = button.dataset.tag ?? 'all';
+    filter.querySelectorAll('button').forEach((b) => {
+      const active = b === button;
+      b.classList.toggle('is-active', active);
+      b.setAttribute('aria-pressed', String(active));
+    });
+
+    rows.forEach((row) => {
+      const rowTags = (row.dataset.tags ?? '').split('|');
+      const show = tag === 'all' || rowTags.includes(tag);
+      row.hidden = !show;
+    });
+  });
+</script>
+
+<style>
+  .blog-head {
+    width: 100%;
+    max-width: calc(var(--measure) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-block: clamp(3.5rem, 9vw, 6rem) 2.25rem;
+  }
+
+  .blog-title {
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    margin-top: 0.75rem;
+    max-width: 22ch;
+  }
+
+  .blog-intro {
+    margin-top: 1.15rem;
+    font-family: var(--font-serif);
+    font-size: var(--step-1);
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 38rem;
+  }
+
+  .blog-sub {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .blog-sub a {
+    color: var(--ink-soft);
+  }
+
+  .blog-body {
+    width: 100%;
+    max-width: calc(var(--measure) + 2 * var(--gutter));
+    margin-inline: auto;
+  }
+
+  .tag-filter ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 0 0 1.75rem;
+    padding: 0;
+  }
+
+  .chip {
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.24rem 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s var(--ease);
+  }
+
+  .chip:hover {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
+
+  .chip.is-active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+  }
+
+  .post-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .post-row {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .post-row-link {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.2rem 2rem;
+    padding-block: 1.5rem;
+    text-decoration: none;
+    align-items: start;
+  }
+
+  .post-row-date {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .post-row-main {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .post-row-title {
+    font-family: var(--font-serif);
+    font-size: 1.18rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--ink);
+    transition: color 0.15s var(--ease);
+  }
+
+  .post-row-link:hover .post-row-title {
+    color: var(--accent-ink);
+  }
+
+  .post-row-desc {
+    font-size: 0.86rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .post-row-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+  }
+
+  .tag + .tag::before {
+    content: '·';
+    margin-right: 0.4rem;
+    color: var(--faint);
+  }
+
+  .empty {
+    color: var(--muted);
+    padding-block: 2rem;
+  }
+
+  .blog-follow {
+    margin-top: 2.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .blog-follow a {
+    color: var(--ink-soft);
+  }
+
+  @media (min-width: 720px) {
+    .post-row-link {
+      grid-template-columns: 6.5rem minmax(0, 1fr);
+    }
+    .post-row-date {
+      padding-top: 0.2rem;
+    }
+  }
+</style>

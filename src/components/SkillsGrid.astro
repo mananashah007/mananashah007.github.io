@@ -1,0 +1,82 @@
+---
+import { skills } from '@/data/site';
+
+const groups = skills;
+---
+
+<div class="skills">
+  {groups.map((group) => (
+    <section class="skill-group">
+      <h3 class="skill-title">{group.title}</h3>
+      {group.blurb && <p class="skill-blurb">{group.blurb}</p>}
+      <ul class="skill-tags">
+        {group.skills.map((skill) => <li>{skill}</li>)}
+      </ul>
+    </section>
+  ))}
+</div>
+
+<p class="skills-note">
+  <span class="skills-note-mark" aria-hidden="true">*</span>
+  Comfortable learning whatever the problem needs — the list above is what I reach for by default.
+</p>
+
+<style>
+  .skills {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 2rem 2.5rem;
+  }
+
+  .skill-title {
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .skill-blurb {
+    font-size: 0.82rem;
+    color: var(--faint);
+    margin-top: 0.25rem;
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0.85rem 0 0;
+    padding: 0;
+  }
+
+  .skill-tags li {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.22rem 0.65rem;
+    transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+  }
+
+  .skill-tags li:hover {
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .skills-note {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--faint);
+    max-width: 38rem;
+  }
+
+  .skills-note-mark {
+    color: var(--faint);
+    margin-right: 0.25rem;
+  }
+</style>

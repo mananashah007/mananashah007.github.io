@@ -1,0 +1,99 @@
+---
+import GithubSlugger from 'github-slugger';
+
+interface Props {
+  body: string;
+}
+
+type Heading = { depth: 2 | 3; text: string; id: string };
+
+const { body } = Astro.props;
+
+// Collect headings from the raw markdown and slug them exactly the way
+// rehype-slug does, so the anchors match the rendered HTML.
+const slugger = new GithubSlugger();
+const headings: Heading[] = [];
+
+let inFence = false;
+for (const rawLine of body.split('\n')) {
+  const line = rawLine.trimEnd();
+  if (/^\s*(```|~~~)/.test(line)) {
+    inFence = !inFence;
+    continue;
+  }
+  if (inFence) continue;
+
+  const match = /^(#{2,3})\s+(.+?)\s*#*\s*$/.exec(line);
+  if (!match) continue;
+
+  const depth = match[1].length as 2 | 3;
+  const text = match[2]
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+
+  headings.push({ depth, text, id: slugger.slug(text) });
+}
+
+const show = headings.length >= 2;
+---
+
+{
+  show && (
+    <nav class="toc" aria-label="On this page">
+      <p class="toc-label">On this page</p>
+      <ol class="toc-list">
+        {headings.map((h) => (
+          <li class:list={{ 'toc-item--sub': h.depth === 3 }}>
+            <a href={`#${h.id}`}>{h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .toc {
+    font-size: 0.82rem;
+    border-left: 1px solid var(--rule);
+    padding-left: 1.1rem;
+  }
+
+  .toc-label {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 0.6rem;
+  }
+
+  .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .toc-list a {
+    color: var(--muted);
+    text-decoration: none;
+    line-height: 1.35;
+    display: block;
+    transition: color 0.15s var(--ease);
+  }
+
+  .toc-list a:hover {
+    color: var(--ink);
+  }
+
+  .toc-item--sub {
+    padding-left: 0.85rem;
+    font-size: 0.78rem;
+  }
+</style>

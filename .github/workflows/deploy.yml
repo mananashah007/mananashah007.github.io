@@ -1,0 +1,93 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow the workflow to publish to Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; don't cancel an in-flight deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Work out the deployment URL
+        id: site
+        shell: bash
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+
+          # A repo named <owner>.github.io is a "user site" served from the
+          # domain root. Every other repo is a "project site" served from
+          # https://<owner>.github.io/<repo>/.
+          REPO_LOWER="$(echo "$REPO" | tr '[:upper:]' '[:lower:]')"
+          OWNER_LOWER="$(echo "$OWNER" | tr '[:upper:]' '[:lower:]')"
+
+          if [ "$REPO_LOWER" = "${OWNER_LOWER}.github.io" ]; then
+            BASE=""
+          else
+            BASE="/${REPO}"
+          fi
+
+          # Optional override: set repository variable PUBLIC_SITE_URL
+          # (Settings → Secrets and variables → Actions → Variables) when using
+          # a custom domain, e.g. https://mananshah.com
+          SITE_URL="${PUBLIC_SITE_URL:-https://${OWNER_LOWER}.github.io}"
+          if [ -n "${PUBLIC_SITE_URL:-}" ]; then
+            BASE=""
+          fi
+
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          echo "site=$SITE_URL" >> "$GITHUB_OUTPUT"
+          echo "Building for $SITE_URL with base '$BASE'"
+        env:
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+
+      - name: Build
+        env:
+          PUBLIC_SITE_URL: ${{ steps.site.outputs.site }}
+          BASE_PATH: ${{ steps.site.outputs.base }}
+        run: pnpm build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

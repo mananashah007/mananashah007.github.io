@@ -1,0 +1,148 @@
+---
+import { projects } from '@/data/site';
+import Icon from '@/components/Icon.astro';
+
+const items = projects;
+---
+
+<ul class="projects">
+  {items.map((project) => (
+    <li class="project">
+      <div class="project-head">
+        <h3 class="project-title">
+          {project.href ? (
+            <a href={project.href} target="_blank" rel="noopener">{project.title}</a>
+          ) : (
+            project.title
+          )}
+        </h3>
+        {project.year && <span class="project-year">{project.year}</span>}
+      </div>
+
+      <p class="project-blurb">{project.blurb}</p>
+
+      <div class="project-foot">
+        <ul class="project-tags">
+          {project.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+        <div class="project-links">
+          {project.repo && (
+            <a href={project.repo} target="_blank" rel="noopener">
+              <Icon name="code" size={14} /> Code
+            </a>
+          )}
+          {project.href && (
+            <a href={project.href} target="_blank" rel="noopener">
+              <Icon name="external" size={14} /> Live
+            </a>
+          )}
+        </div>
+      </div>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .projects {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1rem;
+  }
+
+  .project {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    transition: border-color 0.18s var(--ease), transform 0.18s var(--ease);
+  }
+
+  .project:hover {
+    border-color: var(--rule-strong);
+    transform: translateY(-2px);
+  }
+
+  .project-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .project-title {
+    font-size: 1.12rem;
+  }
+
+  .project-title a {
+    text-decoration: none;
+  }
+
+  .project-title a:hover {
+    color: var(--accent-ink);
+  }
+
+  .project-year {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .project-blurb {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    flex: 1;
+  }
+
+  .project-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.35rem;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .project-tags li {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--muted);
+    background: var(--bg-subtle);
+    border-radius: 3px;
+    padding: 0.1rem 0.35rem;
+  }
+
+  .project-links {
+    display: flex;
+    gap: 0.8rem;
+    flex: none;
+  }
+
+  .project-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .project-links a:hover {
+    color: var(--accent-ink);
+  }
+</style>

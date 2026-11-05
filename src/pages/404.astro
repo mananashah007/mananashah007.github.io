@@ -1,0 +1,53 @@
+---
+import Base from '@/layouts/Base.astro';
+import { url } from '@/lib/url';
+
+---
+
+<Base title="Page not found" bare>
+  <section class="notfound wrap wrap--narrow">
+    <p class="code">404</p>
+    <h1>This page doesn't exist.</h1>
+    <p class="muted">
+      It may have moved, or the link may be wrong. The writing lives here, and the rest of the
+      site is one page.
+    </p>
+    <div class="links">
+      <a class="btn btn--solid" href={url('')}>Back to home</a>
+      <a class="btn" href={url('blog/')}>Read the blog</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .notfound {
+    padding-block: clamp(4rem, 12vw, 8rem);
+    text-align: left;
+  }
+
+  .code {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--faint);
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+  }
+
+  .muted {
+    margin-top: 1rem;
+    max-width: 32rem;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 2rem;
+  }
+</style>

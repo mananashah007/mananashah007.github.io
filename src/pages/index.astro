@@ -1,0 +1,195 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import ExperienceList from '@/components/ExperienceList.astro';
+import EducationList from '@/components/EducationList.astro';
+import SkillsGrid from '@/components/SkillsGrid.astro';
+import ProjectGrid from '@/components/ProjectGrid.astro';
+import PostCard from '@/components/PostCard.astro';
+import Icon from '@/components/Icon.astro';
+import { projects, site } from '@/data/site';
+import { url } from '@/lib/url';
+
+
+const posts = (await getCollection('blog'))
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+---
+
+<Base>
+  <Hero />
+
+  <div class="wrap home">
+    <Section index="01" title="Experience" lede="Where I've worked and what I actually did there" id="experience">
+      <ExperienceList />
+    </Section>
+
+    <Section index="02" title="Skills" lede="Tools and methods I use day to day" id="skills">
+      <SkillsGrid />
+    </Section>
+
+    {
+      projects.length > 0 && (
+        <Section
+          index="03"
+          title="Selected projects"
+          lede="Side projects and analyses worth poking at"
+          id="projects"
+        >
+          <ProjectGrid />
+        </Section>
+      )
+    }
+
+    <Section index="04" title="Education" lede="Formal training behind the work" id="education">
+      <EducationList />
+    </Section>
+
+    <section class="writing" data-reveal>
+      <div class="writing-head">
+        <h2 class="writing-title">
+          <span class="section-index">05</span>
+          Writing
+        </h2>
+        <p class="writing-lede">
+          Notes on statistics, data science, business and economics.
+        </p>
+        <a class="writing-all" href={url('blog/')}>
+          All posts <Icon name="arrow" size={14} />
+        </a>
+      </div>
+
+      {
+        posts.length > 0 ? (
+          <div class="writing-grid">
+            {posts.map(
+              (post) => <PostCard post={post} href={`blog/${post.id}/`} variant="featured" />
+            )}
+          </div>
+        ) : (
+          <p class="muted">
+            The first post is in progress. Subscribe via <a href={url('rss.xml')}>RSS</a> to catch it.
+          </p>
+        )
+      }
+    </section>
+
+    <section class="contact" data-reveal aria-labelledby="contact-title">
+      <div class="contact-inner">
+        <div>
+          <h2 class="contact-title" id="contact-title">Let's talk</h2>
+          <p class="contact-text">
+            I'm {site.currently ? site.currently.toLowerCase() : 'open to new work'}. If you have a
+            data problem, a role, or a question about something I wrote, my inbox is open.
+          </p>
+        </div>
+        <a class="btn btn--solid contact-btn" href={`mailto:${site.email}`}>
+          <Icon name="mail" size={15} /> {site.email}
+        </a>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .home {
+    width: 100%;
+    max-width: var(--wide);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .writing {
+    margin-top: clamp(3rem, 7vw, 5rem);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .writing-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .writing-title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    font-size: var(--step-2);
+  }
+
+  .section-index {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--faint);
+    transform: translateY(-0.15em);
+  }
+
+  .writing-lede {
+    order: 3;
+    flex-basis: 100%;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0;
+  }
+
+  .writing-all {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent-ink);
+    text-decoration: none;
+  }
+
+  .writing-all:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .writing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 1.75rem 2.5rem;
+  }
+
+  .contact {
+    margin-top: clamp(3.5rem, 8vw, 6rem);
+  }
+
+  .contact-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem 3rem;
+    padding: clamp(1.6rem, 4vw, 2.75rem);
+    border-radius: 10px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--rule);
+  }
+
+  .contact-title {
+    font-size: var(--step-2);
+  }
+
+  .contact-text {
+    margin-top: 0.5rem;
+    font-size: 0.92rem;
+    color: var(--muted);
+    max-width: 34rem;
+  }
+
+  .contact-btn {
+    white-space: nowrap;
+  }
+</style>
