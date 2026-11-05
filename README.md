@@ -36,8 +36,8 @@ There you will find:
 - [ ] Review the experience bullets — pull the metrics you want to lead with
 - [ ] Add projects if you want the optional section, or leave `projects` empty
 - [ ] Replace the starter blog post in `src/content/blog/`
-- [ ] Set your real URL (`PUBLIC_SITE_URL` below) so canonical links, the
-      sitemap and the RSS feed are correct
+- [x] Site URL is already set to `https://mananashah007.github.io` in
+      `astro.config.mjs` (only change it if you move to a custom domain)
 
 ## Writing a post
 

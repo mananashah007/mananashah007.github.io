@@ -17,7 +17,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 //   BASE_PATH        '' for a user site (username.github.io)
 //                    '/portfolio' for a project site (username.github.io/portfolio)
 // ---------------------------------------------------------------------------
-const site = process.env.PUBLIC_SITE_URL || 'https://example.github.io';
+const site = process.env.PUBLIC_SITE_URL || 'https://mananashah007.github.io';
 const rawBase = process.env.BASE_PATH || '/';
 
 const base = rawBase === '' ? '/' : rawBase.startsWith('/') ? rawBase : `/${rawBase}`;

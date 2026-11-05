@@ -17,7 +17,7 @@ export function url(path = ''): string {
 
 /** Absolute URL (for canonical links, RSS and sitemaps). */
 export function absolute(path = ''): string {
-  const site = import.meta.env.SITE ?? 'https://example.github.io';
+  const site = import.meta.env.SITE ?? 'https://mananashah007.github.io';
   return new URL(url(path), site).href;
 }
 
