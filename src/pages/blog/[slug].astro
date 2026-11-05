@@ -3,6 +3,7 @@ import type { CollectionEntry } from 'astro:content';
 import { getCollection, render } from 'astro:content';
 import Base from '@/layouts/Base.astro';
 import PostToc from '@/components/PostToc.astro';
+import ReadingProgress from '@/components/ReadingProgress.astro';
 import Icon from '@/components/Icon.astro';
 import { site } from '@/data/site';
 import { url } from '@/lib/url';
@@ -25,7 +26,8 @@ if (draft && import.meta.env.PROD) {
   return Astro.redirect('../');
 }
 
-const words = post.body.split(/\s+/).filter(Boolean).length;
+const body = post.body ?? '';
+const words = body.split(/\s+/).filter(Boolean).length;
 const minutes = Math.max(1, Math.round(words / 220));
 
 const fmt = (d: Date) =>
@@ -52,6 +54,7 @@ const hasToc = headings.some((h) => h.depth === 2 || h.depth === 3);
 ---
 
 <Base type="article" title={title} description={description} publishedTime={pubDate} image={post.data.image}>
+  <ReadingProgress />
   <article class="post" data-post>
     <div class="wrap">
       <a class="back" href={url('blog/')}><Icon name="arrow" size={14} /> All writing</a>
@@ -65,14 +68,7 @@ const hasToc = headings.some((h) => h.depth === 2 || h.depth === 3);
       <p class="post-desc">{description}</p>
 
       <div class="post-meta">
-        <img
-          class="post-avatar"
-          src={url('favicon.svg')}
-          alt=""
-          width="28"
-          height="28"
-          aria-hidden="true"
-        />
+        <span class="post-avatar" aria-hidden="true">{site.initials}</span>
         <span>{site.name}</span>
         <span class="dot" aria-hidden="true">·</span>
         <time datetime={pubDate.toISOString()}>{fmt(pubDate)}</time>
@@ -100,7 +96,7 @@ const hasToc = headings.some((h) => h.depth === 2 || h.depth === 3);
 
       {hasToc && (
         <aside class="post-aside">
-          <PostToc body={post.body} />
+          <PostToc body={body} />
         </aside>
       )}
     </div>
@@ -138,39 +134,7 @@ const hasToc = headings.some((h) => h.depth === 2 || h.depth === 3);
   </article>
 </Base>
 
-<script>
-  // Tiny progress bar for long reads.
-  const bar = document.createElement('div');
-  bar.className = 'read-progress';
-  document.body.appendChild(bar);
 
-  const update = () => {
-    const doc = document.documentElement;
-    const max = doc.scrollHeight - window.innerHeight;
-    const pct = max > 0 ? Math.min(1, doc.scrollTop / max) : 0;
-    bar.style.transform = `scaleX(${pct})`;
-  };
-
-  update();
-  addEventListener('scroll', update, { passive: true });
-  addEventListener('resize', update);
-</script>
-
-<style is:global>
-  .read-progress {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--accent);
-    transform-origin: 0 50%;
-    transform: scaleX(0);
-    z-index: 60;
-    opacity: 0.7;
-    pointer-events: none;
-  }
-</style>
 
 <style>
   .post {
@@ -220,6 +184,7 @@ const hasToc = headings.some((h) => h.depth === 2 || h.depth === 3);
   }
 
   .post-title {
+    color: var(--ink);
     font-size: clamp(2rem, 5vw, 2.9rem);
     font-weight: 400;
     letter-spacing: -0.03em;
@@ -248,9 +213,18 @@ const hasToc = headings.some((h) => h.depth === 2 || h.depth === 3);
   }
 
   .post-avatar {
-    border-radius: 3px;
-    border: 1px solid var(--rule);
-    margin-right: 0.15rem;
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 5px;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--font-sans);
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin-right: 0.2rem;
   }
 
   .dot {

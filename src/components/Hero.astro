@@ -27,13 +27,13 @@ const hasPhoto = Boolean(photo) && fileExists(photo as string);
     </p>
 
     <h1 class="hero-title">
-      {firstName}<span class="hero-surname">{surname}</span>
+      {firstName}{' '}<span class="hero-surname">{surname}</span>
     </h1>
 
     <p class="hero-tagline">{site.tagline}</p>
 
     <p class="hero-meta">
-      <span>{site.location}</span>
+      {site.location}{site.currently && ` · `}
       {site.currently && <span class="hero-currently">{site.currently}</span>}
     </p>
 
@@ -41,7 +41,7 @@ const hasPhoto = Boolean(photo) && fileExists(photo as string);
       {links.map((link) => (
         <a
           class:list={['btn', { 'btn--solid': link.icon === 'mail' }]}
-          href={link.icon === 'mail' ? link.href : url(link.href)}
+          href={/^(https?:|mailto:)/.test(link.href) ? link.href : url(link.href)}
           target={link.icon === 'mail' ? undefined : '_blank'}
           rel={link.icon === 'mail' ? undefined : 'noopener'}
         >
@@ -127,10 +127,6 @@ const hasPhoto = Boolean(photo) && fileExists(photo as string);
   }
 
   .hero-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem 0.6rem;
     margin-top: 1.15rem;
     font-size: 0.85rem;
     color: var(--muted);
@@ -142,13 +138,10 @@ const hasPhoto = Boolean(photo) && fileExists(photo as string);
 
   .hero-currently {
     color: var(--accent-ink);
+    min-width: 0;
   }
 
-  .hero-currently::before {
-    content: '·';
-    color: var(--faint);
-    margin-right: 0.6rem;
-  }
+
 
   .hero-actions {
     display: flex;
@@ -200,7 +193,7 @@ const hasPhoto = Boolean(photo) && fileExists(photo as string);
     pointer-events: none;
   }
 
-  [data-theme='dark'] .portrait-grid {
+  :root[data-theme='dark'] .portrait-grid {
     mix-blend-mode: screen;
     opacity: 0.18;
   }

@@ -22,8 +22,9 @@ export const site = {
     { label: 'GitHub', href: 'https://github.com/your-handle', icon: 'github' },
     { label: 'Résumé (PDF)', href: 'resume.pdf', icon: 'file' },
   ],
-  // Short "currently" line in the hero. Delete if not useful.
-  currently: 'Open to data analyst and data science roles',
+  // Short "currently" line in the hero (keep it under ~40 characters so it
+  // fits on one line on a phone). Delete if not useful.
+  currently: 'Open to data roles',
 };
 
 export type Experience = {

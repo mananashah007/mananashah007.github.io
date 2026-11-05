@@ -26,7 +26,12 @@ const {
 } = Astro.props;
 
 const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.role}`;
-const canonical = absolute(Astro.url.pathname.replace(/\/$/, '') + '/');
+// Astro.url.pathname already includes the configured base, so resolve it
+// directly against the site root rather than running it through absolute().
+const canonical = new URL(
+  Astro.url.pathname.replace(/\/?$/, '/'),
+  import.meta.env.SITE ?? Astro.site
+).href;
 const ogImage = image ? absolute(image) : undefined;
 
 const jsonLd =

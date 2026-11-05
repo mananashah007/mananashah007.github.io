@@ -2,6 +2,7 @@ import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
 import { site } from '@/data/site';
+import { absolute, url } from '@/lib/url';
 
 export async function GET(context: APIContext) {
   const posts = (await getCollection('blog'))
@@ -11,12 +12,12 @@ export async function GET(context: APIContext) {
   return rss({
     title: `${site.name} — Writing`,
     description: `Essays on statistics, data science, business and economics by ${site.name}.`,
-    site: context.site!.href,
+    site: new URL(url(''), context.site).href,
     items: posts.map((post) => ({
       title: post.data.title,
       description: post.data.description,
       pubDate: post.data.pubDate,
-      link: `blog/${post.id}/`,
+      link: absolute(`blog/${post.id}/`),
       categories: post.data.tags,
     })),
     customData: '<language>en</language>',

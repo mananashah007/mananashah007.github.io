@@ -223,7 +223,7 @@ main {
   color: var(--btn-ink);
 }
 
-[data-theme='dark'] .btn--solid:hover {
+:root[data-theme='dark'] .btn--solid:hover {
   color: var(--bg);
 }
 
@@ -416,6 +416,19 @@ main {
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0.4em 0;
+}
+
+/* ---------------------- code blocks: dual Shiki theme ------------------- */
+
+/* Astro emits both palettes inline (color + --shiki-dark). Flip to the dark
+   values when the site is in dark mode. */
+:root[data-theme='dark'] .prose pre.astro-code {
+  background-color: var(--shiki-dark-bg) !important;
+  color: var(--shiki-dark) !important;
+}
+
+:root[data-theme='dark'] .prose pre.astro-code span {
+  color: var(--shiki-dark) !important;
 }
 
 /* -------------------------- reveal on scroll ---------------------------- */

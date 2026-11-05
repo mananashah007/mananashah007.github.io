@@ -3,7 +3,6 @@ import { site } from '@/data/site';
 import { url } from '@/lib/url';
 import Icon from '@/components/Icon.astro';
 
-const photo = (site as { photo?: string }).photo;
 const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
 ---
 
@@ -153,8 +152,9 @@ const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
     place-items: center;
   }
 
-  [data-theme='light'] .icon-moon,
-  [data-theme='dark'] .icon-sun {
+  :root[data-theme='light'] .icon-moon,
+  :root[data-theme='dark'] .icon-sun,
+  :root:not([data-theme]) .icon-moon {
     display: none;
   }
 

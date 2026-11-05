@@ -1,0 +1,39 @@
+---
+// Slim scroll-progress bar shown on post pages.
+// Kept as a component so its script is rendered inside <body>.
+---
+
+<script>
+  if (!document.querySelector('.read-progress')) {
+    const bar = document.createElement('div');
+    bar.className = 'read-progress';
+    document.body.appendChild(bar);
+
+    const update = () => {
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? Math.min(1, doc.scrollTop / max) : 0;
+      bar.style.transform = `scaleX(${pct})`;
+    };
+
+    update();
+    addEventListener('scroll', update, { passive: true });
+    addEventListener('resize', update);
+  }
+</script>
+
+<style is:global>
+  .read-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    z-index: 60;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+</style>
